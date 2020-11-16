@@ -30,10 +30,15 @@ from notify_run import Notify
 
 # loading environment
 load_dotenv()
+
+# discord
 DISCORD_WEBHOOK = os.getenv('DISCORD_WEBHOOK')
-USERNAME = os.getenv("USERNAME")
+
+# gmail username and password
+USERNAME = os.getenv("USERNAME1")
 PASSWORD = os.getenv("PASSWORD")
 
+# whatsapp twilio
 TWILIO_SID = os.getenv("TWILIO_SID")
 TWILIO_TOKEN = os.getenv("TWILIO_TOKEN")
 TWILIO_NUM = os.getenv("TWILIO_NUM")
@@ -261,7 +266,7 @@ def getLink():
     
     link = data[0][0]
 
-    return [subj, link]     
+    return [subj, link, classTime]     
 
 class GoogleMeet():
 
@@ -290,7 +295,11 @@ class GoogleMeet():
         
         self.link = link
         self.subject = subject
+
+        # waiting untill the element is available in the website
         wait = WebDriverWait(self.browser, 10)
+
+        # google page
         url = 'https://accounts.google.com/'
         self.browser.get(url)
        
@@ -366,15 +375,15 @@ class GoogleMeet():
         onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
         maxPeople = int(onlineNum)
 
-        # Wait till some students enter the class. This is make sure that oru leaving time is at 15 students
-        # If this not done, joining time students be more than 15 (or our case 5)
-        while (int(onlineNum) < 15):
+        # Wait till some students enter the class. This is make sure that our leaving time is at 15 students
+        # If this not done, instant leaving would happen
+        while (int(onlineNum) < 16):
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
             maxPeople = int(onlineNum)
 
         # Loops till the number of people is greater than a value
-        while (int(onlineNum) >= 15):
+        while (int(onlineNum) >= 12):
             time.sleep(5)
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
@@ -427,7 +436,7 @@ if __name__ == "__main__":
             modifyTempTimeTable(Mday, Mp1, Mp2, Mp3, Mp4, Mp5)
             sendWhatsapp("Timetable for "+ Mday+ " modified")
 
-            choice = input("Do you want to modify TT for another day (press y/n): ")
+            choice = input("Do you want to modify TT for another day (or remodify) (press y/n): ")
 
 
     # Wait till 8.30AM and 8.55AM if we start program before the class starts
@@ -437,19 +446,19 @@ if __name__ == "__main__":
 
 
     if (day == "friday"):
-        while (time1 < 855):  # friday time table is different
+        if (time1 < 855):  # friday time table is different
             print("Waiting for class start time...")
             x = datetime.datetime.now()
             time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (855-time1)*60, " seconds")
-            time.sleep((855-time1)*60)
+            print("Sleeping for ", (856-time1)*60, " seconds")
+            time.sleep((856-time1)*60)
     else:
-        while (time1 < 830):
+        if (time1 < 830):
             print("Waiting for class start time...")
             x = datetime.datetime.now()
             time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (830-time1)*60, " seconds")
-            time.sleep((830-time1)*60)
+            print("Sleeping for ", (831-time1)*60, " seconds")
+            time.sleep((831-time1)*60)
 
 
     # Loop to make sure the code runs till timetable ends
@@ -458,17 +467,19 @@ if __name__ == "__main__":
         data = getLink()
         subject = data[0]
         link = data[1]
+        classTime = int(data[2])
 
         if prev_subject != subject:
             if (subject != 'MEMS' and subject != "NIL"):
-                obj = GoogleMeet(USERNAME,PASSWORD)
+                obj = GoogleMeet(USERNAME, PASSWORD)
                 obj.join(link, subject)
                 obj.leave(link, subject)
                 prev_subject = subject
             
             else:
                 print("MEMS-NIL")
-                time.sleep(300)
+                print("Sleeping for ", (classTime+60 - time1)*60, " minutes")
+                time.sleep((classTime+60 - time1)*60)
                 # tosleep = int(str(int(x.strftime("%H")) + 1) + '30')
                 # print("Sleeping till ", tosleep)
                 # time.sleep(tosleep - time1))
