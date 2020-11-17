@@ -2,7 +2,7 @@
 # $ notify-run configure https://notify.run/oduMTzm40TzRcNv4
 # $ notify-run send "Hello from notify.run"
 
-TIMETABLE_MODIFICATION_ENABLED = True
+TIMETABLE_MODIFICATION_ENABLED = False
 
 import re
 import os
@@ -13,7 +13,7 @@ import requests
 from dotenv import load_dotenv
 from discord_webhooks import DiscordWebhooks
 from twilio.rest import Client 
-# Selenium necessary libraries
+# Selenium necessary library functions
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -44,7 +44,7 @@ TWILIO_TOKEN = os.getenv("TWILIO_TOKEN")
 TWILIO_NUM = os.getenv("TWILIO_NUM")
 MY_NUM = os.getenv("MY_NUM")
 
-client = Client(TWILIO_SID, TWILIO_TOKEN)
+# client = Client(TWILIO_SID, TWILIO_TOKEN)
 
 # telegram
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -59,12 +59,15 @@ def sendTelegram(message):
     
     response = requests.get(send_text)
 
+def sendDiscord(message):
+    webhook = DiscordWebhooks(DISCORD_WEBHOOK)
+    # webhook.set_content(title='Seems like no class today',
+    #                     description="No join button found! Assuming no class.")
+    webhook.set_content(title = message)
+    webhook.send()
+
 def sendWhatsapp(message):
-    message = client.messages.create( 
-                              from_= TWILIO_NUM,  
-                              body = message,      
-                              to = MY_NUM
-                          )
+    pass
 
 
 # Function for checking the number of people inside meeting
@@ -98,12 +101,7 @@ def createSubjectTable():
 
     conn.commit()
 
-def sendDiscord(message):
-    webhook = DiscordWebhooks(DISCORD_WEBHOOK)
-    # webhook.set_content(title='Seems like no class today',
-    #                     description="No join button found! Assuming no class.")
-    webhook.set_content(title = message)
-    webhook.send()
+
 
 def createTimeTable():
     days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
@@ -420,8 +418,7 @@ class GoogleMeet():
 
 if __name__ == "__main__":
     
-    dropTempTimeTable()
-    createTempTimeTable()
+    
 
     if(TIMETABLE_MODIFICATION_ENABLED):
         choice = input("Do you want to modify TT for a day (press y/n): ")
@@ -462,12 +459,18 @@ if __name__ == "__main__":
 
 
     # Loop to make sure the code runs till timetable ends
-    prev_subject = ''
+    prev_subject = 'ITC'
     while(time1 <= 1330):
         data = getLink()
         subject = data[0]
         link = data[1]
         classTime = int(data[2])
+        nextClassTime = classTime + 100
+
+        if (time1 % 100) <= 59 and (time1 % 100) >= 30:
+            sleepTime = (nextClassTime - time1 - 40) 
+        if (time1 % 100) <= 29 and (time1 % 100) >= 0:
+            sleepTime = (nextClassTime - time1) 
 
         if prev_subject != subject:
             if (subject != 'MEMS' and subject != "NIL"):
@@ -478,12 +481,16 @@ if __name__ == "__main__":
             
             else:
                 print("MEMS-NIL")
-                print("Sleeping for ", (classTime+60 - time1)*60, " minutes")
-                time.sleep((classTime+60 - time1)*60)
-                # tosleep = int(str(int(x.strftime("%H")) + 1) + '30')
-                # print("Sleeping till ", tosleep)
-                # time.sleep(tosleep - time1))
+                print("Sleeping for ", sleepTime, " minutes...")
+                time.sleep(sleepTime * 60)
+        else:
+            print("Waiting after class...")
+            print("Sleeping for ", sleepTime, " minutes...")
+            time.sleep(sleepTime*60)
 
 
         x = datetime.datetime.now()
-        time1 = int(x.strftime("%H") + x.strftime("%M")) 
+        time1 = int(x.strftime("%H") + x.strftime("%M"))
+        
+    dropTempTimeTable()
+    createTempTimeTable()
