@@ -213,6 +213,11 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p5, sub5))
 
     conn.commit()
+
+    perm = db.execute("SELECT * FROM '%s'" % (day+'Temp'))
+    perm = perm.fetchall()
+
+    sendDiscord("Timetable for "+day+" changed.")
     # perm = db.execute("SELECT * FROM '%s'" % (dayTemp))
     # perm = perm.fetchall()
     # print(perm)
