@@ -58,6 +58,7 @@ def sendTelegram(message):
     send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage?chat_id=' + TELEGRAM_CHAT_ID + '&text=' + message
     
     response = requests.get(send_text)
+    
 
 def sendDiscord(message):
     webhook = DiscordWebhooks(DISCORD_WEBHOOK)
@@ -91,7 +92,8 @@ def createSubjectTable():
     sub[6] = [6, 'LAB', 'https://meet.google.com/tog-aqpg-msa']
     sub[7] = [7, 'MEMS', 'https://meet.google.com/onn-po-geddye']
     sub[8] = [8, 'OC', 'https://meet.google.com/ywh-zkes-zhy']
-    sub[9] = [9, 'NIL', 'NIL'] # This is for making tempTimeTable have no class during modification
+    sub[9] = [9, 'NIL', 'NIL']  # This is for making tempTimeTable have no class during modification
+    sub[10] = [10, 'CS', 'https://meet.google.com/nva-asak-jhu']
 
     for i in sub:
         id = sub.get(i)[0]
@@ -201,15 +203,15 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
     dayTemp = day + 'Temp'
 
     # print(sub1, sub2, sub3, sub4, sub5, dayTemp, day, p1, p2, p3, p4, p5)
-    if (p1 != 0):
+    if (p1 != 0 or p1 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p1, sub1))
-    if (p2 != 0):
+    if (p2 != 0 or p2 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p2, sub2))
-    if (p3 != 0):
+    if (p3 != 0 or p3 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p3, sub3))
-    if (p4 != 0):
+    if (p4 != 0 or p4 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p4, sub4))
-    if (p5 != 0):
+    if (p5 != 0 or p5 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p5, sub5))
 
     conn.commit()
@@ -401,7 +403,7 @@ class GoogleMeet():
                 sendDiscord("Class about to get over")
                 sendWhatsapp("Class about to get over")
                 sendTelegram("Class about to get over")
-                # maxPeople = int(onlineNum)
+                maxPeople = int(onlineNum)
 
             print("Online people: ", onlineNum)
         
@@ -459,12 +461,15 @@ if __name__ == "__main__":
             print("Waiting for class start time...")
             x = datetime.datetime.now()
             time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (831-time1)*60, " seconds")
+            print("Sleeping for ", (831 - time1), " minutes")
+            slt = 831 - time1
+            sendTelegram("Sleeping for " +str(slt) + " minutes. Waiting for start of class")
+            sendDiscord("Sleeping for "+str(slt)+" minutes. Waiting for start of class")
             time.sleep((831-time1)*60)
 
 
     # Loop to make sure the code runs till timetable ends
-    prev_subject = 'ITC'
+    prev_subject = '.'
     while(time1 <= 1330):
         data = getLink()
         subject = data[0]
@@ -472,10 +477,23 @@ if __name__ == "__main__":
         classTime = int(data[2])
         nextClassTime = classTime + 100
 
-        if (time1 % 100) <= 59 and (time1 % 100) >= 30:
-            sleepTime = (nextClassTime - time1 - 40) 
-        if (time1 % 100) <= 29 and (time1 % 100) >= 0:
-            sleepTime = (nextClassTime - time1) 
+        sendDiscord("Class: " + subject)
+        sendTelegram("Class: " + subject)
+
+
+        if day == 'friday':
+            # Not complete
+            nextClassTime = classTime + 95
+            if (time1 % 100) <= 59 and (time1 % 100) >= 30:
+                sleepTime = (nextClassTime - time1 - 40) + 1
+            if (time1 % 100) <= 29 and (time1 % 100) >= 0:
+                sleepTime = (nextClassTime - time1) + 1
+        else:
+            nextClassTime = classTime + 100
+            if (time1 % 100) <= 59 and (time1 % 100) >= 30:
+                sleepTime = (nextClassTime - time1 - 40) 
+            if (time1 % 100) <= 29 and (time1 % 100) >= 0:
+                sleepTime = (nextClassTime - time1) 
 
         if prev_subject != subject:
             if (subject != 'MEMS' and subject != "NIL"):
@@ -486,11 +504,15 @@ if __name__ == "__main__":
             
             else:
                 print("MEMS-NIL")
+                sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
+                sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
                 print("Sleeping for ", sleepTime, " minutes...")
                 time.sleep(sleepTime * 60)
         else:
             print("Waiting after class...")
             print("Sleeping for ", sleepTime, " minutes...")
+            sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
+            sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
             time.sleep(sleepTime*60)
 
 

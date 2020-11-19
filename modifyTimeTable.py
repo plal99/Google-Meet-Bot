@@ -1,5 +1,8 @@
 from bot import *
 
+dropTempTimeTable()
+createTempTimeTable()
+
 choice = input("Do you want to modify TT for a day (press y/n): ")
 while(choice.lower() == 'y'):
     Mday = input("Enter day to be changed: ")

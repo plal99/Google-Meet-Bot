@@ -1,3 +1,5 @@
 .env
 check.py
 debug.log
+__pycache__
+timetable.db
