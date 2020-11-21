@@ -27,3 +27,8 @@ This app has many notification architechtures present
 ## Install
  - Clone the repository `git clone https://github.com/plal99/Google-Meet-Bot.git`
  - Install requirements.txt `pip install -r requirements.txt`
+
+
+# Disclaimer
+Don't use this project to automate your classes. See this project only as a way of understanding automation works and how it can even be implemented in your day to day life. I will never promote anyone to use this for attending online classes.
+Classes are important and respect your teachers. :)
