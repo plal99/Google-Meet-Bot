@@ -21,6 +21,9 @@ It takes into account how much people are in the meeting per 5 seconds, and the 
 This app has many notification architechtures present
 - **_Whatsapp_** (twilio sandbox) : It will notify everything by whatsapp. You need to have account in twilio and register. It costs about 0.0085$ for 1 message and you'll get 15$ when signing up. If you are a college student then you will have a college mail and then you can register github pro for free and get 50$ in twilio.
 - **_Discord_** : I created a channel for me and took the discord webhook. It is free and i'll get all notifications in it
-- **_Telegram_** : I created a bot and notifications come in the for of messages from that bot
+- **_Telegram_** : I created a bot in telegram and notifications come in the form of messages from that bot
 - **_Notify-run_** : It send you push notifications to browser
 
+## Install
+ - Clone the repository `git clone https://github.com/plal99/Google-Meet-Bot.git`
+ - Install requirements.txt `pip install -r requirements.txt`
