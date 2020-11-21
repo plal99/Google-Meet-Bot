@@ -83,17 +83,28 @@ def createSubjectTable():
                                         ); """
     db.execute(table)
 
+    ITC_LINK = os.getenv("ITC_LINK")
+    PR_LINK = os.getenv("PR_LINK")
+    MWR_LINK = os.getenv("MWR_LINK")
+    CC_LINK = os.getenv("CC_LINK")
+    SP_LINK = os.getenv("SP_LINK")
+    LAB_LINK = os.getenv("LAB_LINK")
+    MEMS_LINK = os.getenv("MEMS_LINK")
+    OC_LINK = os.getenv("OC_LINK")
+    CS_LINK = os.getenv("CS_LINK")
+    NIL_LINK = os.getenv("NIL_LINK")
+
     sub = {}
-    sub[1] = [1, 'ITC', 'https://meet.google.com/dfv-owvb-cpn']
-    sub[2] = [2, 'PR', 'https://meet.google.com/egs-mtrt-fic']
-    sub[3] = [3, 'MWR', 'https://meet.google.com/inr-ikma-mku']
-    sub[4] = [4, 'CC', 'https://meet.google.com/wsm-tyxk-qcj']
-    sub[5] = [5, 'SP', 'https://meet.google.com/vbm-bixc-evs']
-    sub[6] = [6, 'LAB', 'https://meet.google.com/tog-aqpg-msa']
-    sub[7] = [7, 'MEMS', 'https://meet.google.com/onn-po-geddye']
-    sub[8] = [8, 'OC', 'https://meet.google.com/ywh-zkes-zhy']
-    sub[9] = [9, 'NIL', 'NIL']  # This is for making tempTimeTable have no class during modification
-    sub[10] = [10, 'CS', 'https://meet.google.com/nva-asak-jhu']
+    sub[1] = [1, 'ITC', ITC_LINK]
+    sub[2] = [2, 'PR', PR_LINK]
+    sub[3] = [3, 'MWR', MWR_LINK]
+    sub[4] = [4, 'CC', CC_LINK]
+    sub[5] = [5, 'SP', SP_LINK]
+    sub[6] = [6, 'LAB', LAB_LINK]
+    sub[7] = [7, 'MEMS', MEMS_LINK]
+    sub[8] = [8, 'OC', OC_LINK]
+    sub[9] = [9, 'NIL', NIL_LINK]  # This is for making tempTimeTable have no class during modification
+    sub[10] = [10, 'CS', CS_LINK]
 
     for i in sub:
         id = sub.get(i)[0]
@@ -188,6 +199,7 @@ def createTempTimeTable():
 
     conn.commit()
 
+#FIXME:
 def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
 
     perm = db.execute("SELECT * FROM '%s'" % (day))
@@ -480,7 +492,7 @@ if __name__ == "__main__":
         sendDiscord("Class: " + subject)
         sendTelegram("Class: " + subject)
 
-
+        #FIXME:
         if day == 'friday':
             # Not complete
             nextClassTime = classTime + 95
