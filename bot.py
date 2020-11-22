@@ -2,6 +2,9 @@
 # $ notify-run configure https://notify.run/oduMTzm40TzRcNv4
 # $ notify-run send "Hello from notify.run"
 
+# As we I am having college mail id, I can enter the meet link without permission. So If you dont have permission, you
+# change code so as to ask for permission.
+
 TIMETABLE_MODIFICATION_ENABLED = False
 
 import re
