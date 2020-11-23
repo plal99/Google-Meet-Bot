@@ -11,6 +11,7 @@ import re
 import os
 import time
 import datetime
+from math import floor
 import sqlite3
 import requests
 from dotenv import load_dotenv
@@ -54,14 +55,17 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # connection to sql database
-conn = sqlite3.connect('timetable.db')
+conn = sqlite3.connect('checktt.db')
 db = conn.cursor()
 
 def sendTelegram(message):
-    send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage?chat_id=' + TELEGRAM_CHAT_ID + '&text=' + message
-    
-    response = requests.get(send_text)
-    
+    try:
+        send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage?chat_id=' + TELEGRAM_CHAT_ID + '&text=' + message
+        
+        response = requests.get(send_text)
+
+    except:
+        pass
 
 def sendDiscord(message):
     webhook = DiscordWebhooks(DISCORD_WEBHOOK)
@@ -123,6 +127,7 @@ def createTimeTable():
     days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
     for day in days:
         db.execute(""" CREATE TABLE IF NOT EXISTS '%s' (
+                                                nos INTEGER PRIMARY KEY,
                                                 time text NOT NULL,
                                                 subject text NOT NULL
                                             ); """ % day)
@@ -132,30 +137,35 @@ def createTimeTable():
     db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1030", "MWR"))
     db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1130", "CC"))
     db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("830", "CS"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("930", "ITC"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1030", "MEMS"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1130", "MWR"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1230", "LAB"))
+    db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("830", "OC"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("930", "CS"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1030", "ITC"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1130", "PR"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1230", "MEMS"))
+    db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("830", "CC"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("930", "OC"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1030", "CS"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1130", "ITC"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1230", "PR"))
+    db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("855", "CC"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("950", "OC"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1045", "MWR"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1140", "MEMS"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     conn.commit()
 
@@ -166,6 +176,7 @@ def createTempTimeTable():
     days = ["mondayTemp", "tuesdayTemp", "wednesdayTemp", "thursdayTemp", "fridayTemp"]
     for day in days:
         db.execute(""" CREATE TABLE IF NOT EXISTS '%s' (
+                                                nos INTEGER PRIMARY KEY,
                                                 time text NOT NULL,
                                                 subject text NOT NULL
                                             ); """ % day)
@@ -175,37 +186,43 @@ def createTempTimeTable():
     db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "MWR"))
     db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "CC"))
     db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("830", "CS"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("930", "ITC"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "MEMS"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "MWR"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "LAB"))
+    db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("830", "OC"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("930", "CS"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "ITC"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "PR"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "MEMS"))
+    db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("830", "CC"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("930", "OC"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "CS"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "ITC"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "PR"))
+    db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("855", "CC"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("950", "OC"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1045", "MWR"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1140", "MEMS"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     conn.commit()
 
 #FIXME:
 def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
 
-    perm = db.execute("SELECT * FROM '%s'" % (day))
+    day = day.lower()
+    perm = db.execute("SELECT time, subject FROM '%s'" % (day))
     perm = perm.fetchall()
 
     # subs here are all times(better time than subs)
@@ -249,7 +266,7 @@ def getLink():
     x = datetime.datetime.now()
     day = x.strftime("%A").lower()
     time = int(x.strftime("%H") + x.strftime("%M"))
-    # time = 1045
+    # time = 1045 #! For debugging only
     mtime = '0'
 
     if day == 'friday':
@@ -278,15 +295,20 @@ def getLink():
     day = day + 'Temp'
     db.execute("SELECT * FROM '%s' WHERE time = '%s'"%(day, mtime))
     data = db.fetchall()
-    classTime = data[0][0]
-    subj = data[0][1]
+    nosTemp = data[0][0]
+    classTime = data[0][1]
+    subj = data[0][2]
+
+    db.execute("SELECT time FROM '%s' WHERE nos = '%s'"% (day, nosTemp+1))
+    data = db.fetchall()
+    nextClassTime = data[0][0]
 
     db.execute("SELECT link FROM sub WHERE subject = '%s'" % subj)
     data = db.fetchall()
     
     link = data[0][0]
 
-    return [subj, link, classTime]     
+    return [subj, link, classTime, nextClassTime]     
 
 class GoogleMeet():
 
@@ -440,8 +462,11 @@ class GoogleMeet():
 
 if __name__ == "__main__":
     
-    
+    createSubjectTable()
+    createTimeTable()
+    createTempTimeTable()
 
+  
     if(TIMETABLE_MODIFICATION_ENABLED):
         choice = input("Do you want to modify TT for a day (press y/n): ")
         while(choice.lower() == 'y'):
@@ -490,7 +515,12 @@ if __name__ == "__main__":
         subject = data[0]
         link = data[1]
         classTime = int(data[2])
-        nextClassTime = classTime + 100
+
+        classTimeMin = classTime%100
+        classTimeHour = classTime/100
+        
+
+        nextClassTime = int(data[3])
 
         sendDiscord("Class: " + subject)
         sendTelegram("Class: " + subject)
@@ -498,13 +528,13 @@ if __name__ == "__main__":
         #FIXME:
         if day == 'friday':
             # Not complete
-            nextClassTime = classTime + 95
+            
             if (time1 % 100) <= 59 and (time1 % 100) >= 30:
                 sleepTime = (nextClassTime - time1 - 40) + 1
             if (time1 % 100) <= 29 and (time1 % 100) >= 0:
                 sleepTime = (nextClassTime - time1) + 1
         else:
-            nextClassTime = classTime + 100
+            
             if (time1 % 100) <= 59 and (time1 % 100) >= 30:
                 sleepTime = (nextClassTime - time1 - 40) 
             if (time1 % 100) <= 29 and (time1 % 100) >= 0:
@@ -536,3 +566,6 @@ if __name__ == "__main__":
         
     dropTempTimeTable()
     createTempTimeTable()
+
+    
+
