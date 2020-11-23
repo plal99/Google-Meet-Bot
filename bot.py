@@ -420,13 +420,13 @@ class GoogleMeet():
 
         # Wait till some students enter the class. This is make sure that our leaving time is at 15 students
         # If this not done, instant leaving would happen
-        while (int(onlineNum) < 16):
+        while (int(onlineNum) < 18):
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
             maxPeople = int(onlineNum)
 
         # Loops till the number of people is greater than a value
-        while (int(onlineNum) >= 12):
+        while (int(onlineNum) >= 15):
             time.sleep(5)
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
@@ -461,124 +461,107 @@ class GoogleMeet():
         self.browser.quit()
 
 
-if __name__ == "__main__":
-    
-    createSubjectTable()
-    createTimeTable()
-    createTempTimeTable()
-
-  
-    if(TIMETABLE_MODIFICATION_ENABLED):
-        choice = input("Do you want to modify TT for a day (press y/n): ")
-        while(choice.lower() == 'y'):
-            Mday = input("Enter day to be changed: ")
-            Mp1 = input("Enter 1st subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp2 = input("Enter 2nd subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp3 = input("Enter 3rd subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp4 = input("Enter 4th subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp5 = input("Enter 5th subject (0: No change, NIL: No class, sub_name: Subject): ")
-
-            modifyTempTimeTable(Mday, Mp1, Mp2, Mp3, Mp4, Mp5)
-            sendWhatsapp("Timetable for "+ Mday+ " modified")
-
-            choice = input("Do you want to modify TT for another day (or remodify) (press y/n): ")
-
+def main():
 
     # Wait till 8.30AM and 8.55AM if we start program before the class starts
-    x = datetime.datetime.now()
-    day = x.strftime("%A").lower()
-    time1 = int(x.strftime("%H") + x.strftime("%M"))
+    try:
+        x = datetime.datetime.now()
+        day = x.strftime("%A").lower()
+        time1 = int(x.strftime("%H") + x.strftime("%M"))
 
 
-    if (day == "friday"):
-        if (time1 < 855):  # friday time table is different
-            print("Waiting for class start time...")
-            x = datetime.datetime.now()
-            time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (856-time1)*60, " seconds")
-            time.sleep((856-time1)*60)
-    else:
-        if (time1 < 830):
-            print("Waiting for class start time...")
-            x = datetime.datetime.now()
-            time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (831 - time1), " minutes")
-            slt = 831 - time1
-            sendTelegram("Sleeping for " +str(slt) + " minutes. Waiting for start of class")
-            sendDiscord("Sleeping for "+str(slt)+" minutes. Waiting for start of class")
-            time.sleep((831-time1)*60)
+        if (day == "friday"):
+            if (time1 < 855):  # friday time table is different
+                print("Waiting for class start time...")
+                x = datetime.datetime.now()
+                time1 = int(x.strftime("%H") + x.strftime("%M"))
+                print("Sleeping for ", (856-time1)*60, " seconds")
+                time.sleep((856-time1)*60)
+        else:
+            if (time1 < 830):
+                print("Waiting for class start time...")
+                x = datetime.datetime.now()
+                time1 = int(x.strftime("%H") + x.strftime("%M"))
+                print("Sleeping for ", (831 - time1), " minutes")
+                slt = 831 - time1
+                sendTelegram("Sleeping for " +str(slt) + " minutes. Waiting for start of class")
+                sendDiscord("Sleeping for "+str(slt)+" minutes. Waiting for start of class")
+                time.sleep((831-time1)*60)
 
 
-    # Loop to make sure the code runs till timetable ends
-    prev_subject = '.'
-    while(time1 <= 1325):
-        data = getLink()
-        subject = data[0]
-        link = data[1]
+        # Loop to make sure the code runs till timetable ends
+        prev_subject = '.'
+        while(time1 <= 1325):
+            data = getLink()
+            subject = data[0]
+            link = data[1]
 
-        # For making sure code works properly when same subjects for two consecutive hours
-        nextSubject = data[4]
-        sameSubjectAgain = False
-        if (subject == nextSubject) and subject != 'NIL':
-            sameSubjectAgain = True
+            # For making sure code works properly when same subjects for two consecutive hours
+            nextSubject = data[4]
+            sameSubjectAgain = False
+            if (subject == nextSubject) and subject != 'NIL':
+                sameSubjectAgain = True
 
-        # * To get the time right
-        classTime = int(data[2])
-        # classTimeMin = classTime%100
-        # classTimeHour = floor(classTime/100)
-        
-        # nextClassTime is neesed for the sleeping time 
-        nextClassTime = int(data[3])
-        nextClassTimeMin = nextClassTime%100
-        nextClassTimeHour = floor(nextClassTime/100)
-
-        sendDiscord("Class: " + subject)
-        sendTelegram("Class: " + subject)
-
-        # timedelta for calculations the difference between the leaving time and the next hour.
-        t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
-        t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
-
-        sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))+1 #! This will be in minutes
-        
-        hourAttended = False
-        if prev_subject != subject:
-            if (subject != 'MEMS' and subject != 'NIL'):
-                obj = GoogleMeet(USERNAME, PASSWORD)
-                obj.join(link, subject)
-                obj.leave(link, subject)
-                hourAttended = True
-                prev_subject = subject
-                if sameSubjectAgain and hourAttended:
-                    prev_subject = '.'
-                    # ? Sleep till next hour and attend the next hour
-                    x = datetime.datetime.now()
-                    t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
-                    t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
-
-                    sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))
-                    time.sleep(sleepTime * 60)
-                    
+            # * To get the time right
+            classTime = int(data[2])
+            # classTimeMin = classTime%100
+            # classTimeHour = floor(classTime/100)
             
+            # nextClassTime is neesed for the sleeping time 
+            nextClassTime = int(data[3])
+            nextClassTimeMin = nextClassTime%100
+            nextClassTimeHour = floor(nextClassTime/100)
+
+            sendDiscord("Class: " + subject)
+            sendTelegram("Class: " + subject)
+
+            # timedelta for calculations the difference between the leaving time and the next hour.
+            t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
+            t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
+
+            sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))+1 #! This will be in minutes
+            
+            hourAttended = False
+            if prev_subject != subject:
+                if (subject != 'MEMS' and subject != 'NIL'):
+                    obj = GoogleMeet(USERNAME, PASSWORD)
+                    obj.join(link, subject)
+                    obj.leave(link, subject)
+                    hourAttended = True
+                    prev_subject = subject
+                    if sameSubjectAgain and hourAttended:
+                        prev_subject = '.'
+                        # ? Sleep till next hour and attend the next hour
+                        x = datetime.datetime.now()
+                        t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
+                        t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
+
+                        sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))
+                        time.sleep(sleepTime * 60)
+                        
+                
+                else:
+                    print("MEMS-NIL")
+                    sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
+                    sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
+                    print("Sleeping for ", sleepTime, " minutes...")
+                    time.sleep(sleepTime * 60)
             else:
-                print("MEMS-NIL")
+                print("Waiting after class...")
+                print("Sleeping for ", sleepTime, " minutes...")
                 sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
                 sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
-                print("Sleeping for ", sleepTime, " minutes...")
-                time.sleep(sleepTime * 60)
-        else:
-            print("Waiting after class...")
-            print("Sleeping for ", sleepTime, " minutes...")
-            sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
-            sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
-            time.sleep(sleepTime*60)
+                time.sleep(sleepTime*60)
 
 
-        x = datetime.datetime.now()
-        time1 = int(x.strftime("%H") + x.strftime("%M"))
-        
-    dropTempTimeTable()
-    createTempTimeTable()
+            x = datetime.datetime.now()
+            time1 = int(x.strftime("%H") + x.strftime("%M"))
 
-    
+    except:
+        sendDiscord("Some error occured! Exiting...")
+        sendTelegram("Some error occured! Exiting...")
+
+
+if __name__ == "__main__":
+    main()
 
