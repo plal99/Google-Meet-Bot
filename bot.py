@@ -55,7 +55,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # connection to sql database
-conn = sqlite3.connect('checktt.db')
+conn = sqlite3.connect('checktt.db', check_same_thread=False)
 db = conn.cursor()
 
 def sendTelegram(message):
@@ -235,15 +235,15 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
     dayTemp = day + 'Temp'
 
     # print(sub1, sub2, sub3, sub4, sub5, dayTemp, day, p1, p2, p3, p4, p5)
-    if (p1 != 0 or p1 != '0'):
+    if (p1 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p1, sub1))
-    if (p2 != 0 or p2 != '0'):
+    if (p2 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p2, sub2))
-    if (p3 != 0 or p3 != '0'):
+    if (p3 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p3, sub3))
-    if (p4 != 0 or p4 != '0'):
+    if (p4 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p4, sub4))
-    if (p5 != 0 or p5 != '0'):
+    if (p5 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p5, sub5))
 
     conn.commit()
