@@ -299,16 +299,17 @@ def getLink():
     classTime = data[0][1]
     subj = data[0][2]
 
-    db.execute("SELECT time FROM '%s' WHERE nos = '%s'"% (day, nosTemp+1))
+    db.execute("SELECT time, subject FROM '%s' WHERE nos = '%s'"% (day, nosTemp+1))
     data = db.fetchall()
     nextClassTime = data[0][0]
+    nextSubj = data[0][1]
 
     db.execute("SELECT link FROM sub WHERE subject = '%s'" % subj)
     data = db.fetchall()
     
     link = data[0][0]
 
-    return [subj, link, classTime, nextClassTime]     
+    return [subj, link, classTime, nextClassTime, nextSubj]     
 
 class GoogleMeet():
 
@@ -514,34 +515,30 @@ if __name__ == "__main__":
         data = getLink()
         subject = data[0]
         link = data[1]
-        classTime = int(data[2])
+        nextSubject = data[4]
 
-        classTimeMin = classTime%100
-        classTimeHour = classTime/100
+        # * To get the time right
+        classTime = int(data[2])
+        # classTimeMin = classTime%100
+        # classTimeHour = floor(classTime/100)
         
 
         nextClassTime = int(data[3])
+        nextClassTimeMin = nextClassTime%100
+        nextClassTimeHour = floor(nextClassTime/100)
 
         sendDiscord("Class: " + subject)
         sendTelegram("Class: " + subject)
 
-        #FIXME:
-        if day == 'friday':
-            # Not complete
-            
-            if (time1 % 100) <= 59 and (time1 % 100) >= 30:
-                sleepTime = (nextClassTime - time1 - 40) + 1
-            if (time1 % 100) <= 29 and (time1 % 100) >= 0:
-                sleepTime = (nextClassTime - time1) + 1
-        else:
-            
-            if (time1 % 100) <= 59 and (time1 % 100) >= 30:
-                sleepTime = (nextClassTime - time1 - 40) 
-            if (time1 % 100) <= 29 and (time1 % 100) >= 0:
-                sleepTime = (nextClassTime - time1) 
+
+        t1 = datetime.timedelta(hours=int(time1.strftime("%H")), minutes=int(time1.strftime("%M")))
+        t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
+
+        sleepTime = int((t2-t1)/datetime.timedelta(minutes=1)) #! This will be in minutes
+        
 
         if prev_subject != subject:
-            if (subject != 'MEMS' and subject != "NIL"):
+            if (subject != 'MEMS' and subject != 'NIL'):
                 obj = GoogleMeet(USERNAME, PASSWORD)
                 obj.join(link, subject)
                 obj.leave(link, subject)
