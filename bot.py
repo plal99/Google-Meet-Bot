@@ -511,18 +511,23 @@ if __name__ == "__main__":
 
     # Loop to make sure the code runs till timetable ends
     prev_subject = '.'
-    while(time1 <= 1330):
+    while(time1 <= 1325):
         data = getLink()
         subject = data[0]
         link = data[1]
+
+        # For making sure code works properly when same subjects for two consecutive hours
         nextSubject = data[4]
+        sameSubjectAgain = False
+        if (subject == nextSubject) and subject != 'NIL':
+            sameSubjectAgain = True
 
         # * To get the time right
         classTime = int(data[2])
         # classTimeMin = classTime%100
         # classTimeHour = floor(classTime/100)
         
-
+        # nextClassTime is neesed for the sleeping time 
         nextClassTime = int(data[3])
         nextClassTimeMin = nextClassTime%100
         nextClassTimeHour = floor(nextClassTime/100)
@@ -530,19 +535,30 @@ if __name__ == "__main__":
         sendDiscord("Class: " + subject)
         sendTelegram("Class: " + subject)
 
-
-        t1 = datetime.timedelta(hours=int(time1.strftime("%H")), minutes=int(time1.strftime("%M")))
+        # timedelta for calculations the difference between the leaving time and the next hour.
+        t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
         t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
 
-        sleepTime = int((t2-t1)/datetime.timedelta(minutes=1)) #! This will be in minutes
+        sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))+1 #! This will be in minutes
         
-
+        hourAttended = False
         if prev_subject != subject:
             if (subject != 'MEMS' and subject != 'NIL'):
                 obj = GoogleMeet(USERNAME, PASSWORD)
                 obj.join(link, subject)
                 obj.leave(link, subject)
+                hourAttended = True
                 prev_subject = subject
+                if sameSubjectAgain and hourAttended:
+                    prev_subject = '.'
+                    # ? Sleep till next hour and attend the next hour
+                    x = datetime.datetime.now()
+                    t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
+                    t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
+
+                    sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))
+                    time.sleep(sleepTime * 60)
+                    
             
             else:
                 print("MEMS-NIL")
