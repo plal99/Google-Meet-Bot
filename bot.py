@@ -124,6 +124,8 @@ def createSubjectTable():
 
 
 def createTimeTable():
+    ''' This is the permanent timetable. You make copies of this to the temp timetables'''
+
     days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
     for day in days:
         db.execute(""" CREATE TABLE IF NOT EXISTS '%s' (
@@ -170,8 +172,8 @@ def createTimeTable():
     conn.commit()
 
 def createTempTimeTable():
-    # This is to create a temp timetable so that in case some teachers modify the timetable just before a class,
-    # you can make neccesory modifications
+    '''This is to create a temp timetable so that in case some teachers modify the timetable just before a class,
+        you can make neccesory modifications'''
     
     days = ["mondayTemp", "tuesdayTemp", "wednesdayTemp", "thursdayTemp", "fridayTemp"]
     for day in days:
@@ -218,7 +220,7 @@ def createTempTimeTable():
 
     conn.commit()
 
-#FIXME:
+
 def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
 
     day = day.lower()
@@ -257,6 +259,8 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
     # print(perm)
 
 def dropTempTimeTable():
+    ''' Drop all the temp timetables'''
+
     days = ["mondayTemp", "tuesdayTemp", "wednesdayTemp", "thursdayTemp", "fridayTemp"]
     for day in days:
         db.execute("DROP TABLE IF EXISTS '%s'" % (day))
@@ -321,6 +325,8 @@ class GoogleMeet():
 
         # Setting preferences
         # self.options.add_argument("--mute-audio")
+        
+        # self.options.add_argument("--profile-directory=Profile 1")
         self.options.add_argument("--disable-infobars")
         self.options.add_argument("--window-size=800,600")
         self.options.add_experimental_option("prefs", { \
@@ -329,9 +335,10 @@ class GoogleMeet():
                 # "profile.default_content_setting_values.geolocation": 2, 
                 "profile.default_content_setting_values.notifications": 2 
         })
+        self.options.add_argument("user-data-dir=C:\\Users\\lalpr\\AppData\\Local\\Google\\Chrome\\User Data")
 
         # Driver - Chrome
-        self.browser = webdriver.Chrome(options=self.options)
+        self.browser = webdriver.Chrome(executable_path=r"chromedriver.exe", options=self.options)
 
 
     def join(self, link, subject):
@@ -342,25 +349,28 @@ class GoogleMeet():
         # waiting untill the element is available in the website
         wait = WebDriverWait(self.browser, 10)
 
-        # google page
-        url = 'https://accounts.google.com/'
-        self.browser.get(url)
+        # ! START - Profile loaded, so no need to login
+        # # google page
+        # url = 'https://accounts.google.com/'
+        # self.browser.get(url)
        
-        # Finding username textbox and logging the username
-        wait.until(EC.element_to_be_clickable((By.ID, 'identifierId'))).send_keys(self.username)
-        wait.until(EC.element_to_be_clickable((By.ID, 'identifierNext'))).click()
+        # # Finding username textbox and logging the username
+        # wait.until(EC.element_to_be_clickable((By.ID, 'identifierId'))).send_keys(self.username)
+        # wait.until(EC.element_to_be_clickable((By.ID, 'identifierNext'))).click()
         
-        # Finding password textbox and logging the password
-        wait.until(EC.element_to_be_clickable((By.NAME, "password"))).send_keys(self.password)
-        wait.until(EC.element_to_be_clickable((By.ID, 'passwordNext'))).click()
-        print("Logged In")
-        time.sleep(3)
+        # # Finding password textbox and logging the password
+        # wait.until(EC.element_to_be_clickable((By.NAME, "password"))).send_keys(self.password)
+        # wait.until(EC.element_to_be_clickable((By.ID, 'passwordNext'))).click()
+        # print("Logged In")
+        # time.sleep(3)
+
+        #! END
 
         # Going to google meet link
         self.browser.get(link)
 
         # Refreshing because google found out our automation works
-        time.sleep(3)
+        time.sleep(2)
         self.browser.refresh()
 
         # Clicking on the dismiss button which comes when camera and mic is off by default in line __inti__ function
@@ -463,6 +473,11 @@ class GoogleMeet():
 
 def main():
 
+    # connection to sql database
+    conn = sqlite3.connect('checktt.db', check_same_thread=False)
+    db = conn.cursor()
+
+
     # Wait till 8.30AM and 8.55AM if we start program before the class starts
     try:
         x = datetime.datetime.now()
@@ -503,7 +518,7 @@ def main():
                 sameSubjectAgain = True
 
             # * To get the time right
-            classTime = int(data[2])
+            # classTime = int(data[2])
             # classTimeMin = classTime%100
             # classTimeHour = floor(classTime/100)
             
@@ -512,19 +527,18 @@ def main():
             nextClassTimeMin = nextClassTime%100
             nextClassTimeHour = floor(nextClassTime/100)
 
-            sendDiscord("Class: " + subject)
-            sendTelegram("Class: " + subject)
-
             # timedelta for calculations the difference between the leaving time and the next hour.
             t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
             t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
 
-            sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))+1 #! This will be in minutes
+            sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))+1    #! This will be in minutes
             
             hourAttended = False
             if prev_subject != subject:
                 if (subject != 'MEMS' and subject != 'NIL'):
                     obj = GoogleMeet(USERNAME, PASSWORD)
+                    sendDiscord("Class: " + subject)
+                    sendTelegram("Class: " + subject)
                     obj.join(link, subject)
                     obj.leave(link, subject)
                     hourAttended = True
