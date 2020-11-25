@@ -11,6 +11,7 @@ import re
 import os
 import time
 import datetime
+from math import floor
 import sqlite3
 import requests
 from dotenv import load_dotenv
@@ -54,14 +55,17 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # connection to sql database
-conn = sqlite3.connect('timetable.db')
+conn = sqlite3.connect('checktt.db', check_same_thread=False)
 db = conn.cursor()
 
 def sendTelegram(message):
-    send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage?chat_id=' + TELEGRAM_CHAT_ID + '&text=' + message
-    
-    response = requests.get(send_text)
-    
+    try:
+        send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage?chat_id=' + TELEGRAM_CHAT_ID + '&text=' + message
+        
+        response = requests.get(send_text)
+
+    except:
+        pass
 
 def sendDiscord(message):
     webhook = DiscordWebhooks(DISCORD_WEBHOOK)
@@ -120,9 +124,12 @@ def createSubjectTable():
 
 
 def createTimeTable():
+    ''' This is the permanent timetable. You make copies of this to the temp timetables'''
+
     days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
     for day in days:
         db.execute(""" CREATE TABLE IF NOT EXISTS '%s' (
+                                                nos INTEGER PRIMARY KEY,
                                                 time text NOT NULL,
                                                 subject text NOT NULL
                                             ); """ % day)
@@ -132,40 +139,46 @@ def createTimeTable():
     db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1030", "MWR"))
     db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1130", "CC"))
     db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO monday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("830", "CS"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("930", "ITC"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1030", "MEMS"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1130", "MWR"))
     db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1230", "LAB"))
+    db.execute("INSERT OR IGNORE INTO tuesday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("830", "OC"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("930", "CS"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1030", "ITC"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1130", "PR"))
     db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1230", "MEMS"))
+    db.execute("INSERT OR IGNORE INTO wednesday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("830", "CC"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("930", "OC"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1030", "CS"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1130", "ITC"))
     db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1230", "PR"))
+    db.execute("INSERT OR IGNORE INTO thursday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("855", "CC"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("950", "OC"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1045", "MWR"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1140", "MEMS"))
     db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO friday (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     conn.commit()
 
 def createTempTimeTable():
-    # This is to create a temp timetable so that in case some teachers modify the timetable just before a class,
-    # you can make neccesory modifications
+    '''This is to create a temp timetable so that in case some teachers modify the timetable just before a class,
+        you can make neccesory modifications'''
     
     days = ["mondayTemp", "tuesdayTemp", "wednesdayTemp", "thursdayTemp", "fridayTemp"]
     for day in days:
         db.execute(""" CREATE TABLE IF NOT EXISTS '%s' (
+                                                nos INTEGER PRIMARY KEY,
                                                 time text NOT NULL,
                                                 subject text NOT NULL
                                             ); """ % day)
@@ -175,37 +188,43 @@ def createTempTimeTable():
     db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "MWR"))
     db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "CC"))
     db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO mondayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("830", "CS"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("930", "ITC"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "MEMS"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "MWR"))
     db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "LAB"))
+    db.execute("INSERT OR IGNORE INTO tuesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("830", "OC"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("930", "CS"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "ITC"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "PR"))
     db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "MEMS"))
+    db.execute("INSERT OR IGNORE INTO wednesdayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("830", "CC"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("930", "OC"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1030", "CS"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1130", "ITC"))
     db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "PR"))
+    db.execute("INSERT OR IGNORE INTO thursdayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("855", "CC"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("950", "OC"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1045", "MWR"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1140", "MEMS"))
     db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1230", "SP"))
+    db.execute("INSERT OR IGNORE INTO fridayTemp (time, subject) VALUES ('%s', '%s')" % ("1330", "NIL"))
 
     conn.commit()
 
-#FIXME:
+
 def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
 
-    perm = db.execute("SELECT * FROM '%s'" % (day))
+    day = day.lower()
+    perm = db.execute("SELECT time, subject FROM '%s'" % (day))
     perm = perm.fetchall()
 
     # subs here are all times(better time than subs)
@@ -218,15 +237,15 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
     dayTemp = day + 'Temp'
 
     # print(sub1, sub2, sub3, sub4, sub5, dayTemp, day, p1, p2, p3, p4, p5)
-    if (p1 != 0 or p1 != '0'):
+    if (p1 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p1, sub1))
-    if (p2 != 0 or p2 != '0'):
+    if (p2 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p2, sub2))
-    if (p3 != 0 or p3 != '0'):
+    if (p3 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p3, sub3))
-    if (p4 != 0 or p4 != '0'):
+    if (p4 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p4, sub4))
-    if (p5 != 0 or p5 != '0'):
+    if (p5 != '0'):
         db.execute("UPDATE '%s' SET subject = '%s' WHERE time = '%s'" % (dayTemp, p5, sub5))
 
     conn.commit()
@@ -240,6 +259,8 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
     # print(perm)
 
 def dropTempTimeTable():
+    ''' Drop all the temp timetables'''
+
     days = ["mondayTemp", "tuesdayTemp", "wednesdayTemp", "thursdayTemp", "fridayTemp"]
     for day in days:
         db.execute("DROP TABLE IF EXISTS '%s'" % (day))
@@ -249,7 +270,7 @@ def getLink():
     x = datetime.datetime.now()
     day = x.strftime("%A").lower()
     time = int(x.strftime("%H") + x.strftime("%M"))
-    # time = 1045
+    # time = 1045 #! For debugging only
     mtime = '0'
 
     if day == 'friday':
@@ -278,15 +299,21 @@ def getLink():
     day = day + 'Temp'
     db.execute("SELECT * FROM '%s' WHERE time = '%s'"%(day, mtime))
     data = db.fetchall()
-    classTime = data[0][0]
-    subj = data[0][1]
+    nosTemp = data[0][0]
+    classTime = data[0][1]
+    subj = data[0][2]
+
+    db.execute("SELECT time, subject FROM '%s' WHERE nos = '%s'"% (day, nosTemp+1))
+    data = db.fetchall()
+    nextClassTime = data[0][0]
+    nextSubj = data[0][1]
 
     db.execute("SELECT link FROM sub WHERE subject = '%s'" % subj)
     data = db.fetchall()
     
     link = data[0][0]
 
-    return [subj, link, classTime]     
+    return [subj, link, classTime, nextClassTime, nextSubj]     
 
 class GoogleMeet():
 
@@ -298,6 +325,8 @@ class GoogleMeet():
 
         # Setting preferences
         # self.options.add_argument("--mute-audio")
+        
+        # self.options.add_argument("--profile-directory=Profile 1")
         self.options.add_argument("--disable-infobars")
         self.options.add_argument("--window-size=800,600")
         self.options.add_experimental_option("prefs", { \
@@ -306,9 +335,10 @@ class GoogleMeet():
                 # "profile.default_content_setting_values.geolocation": 2, 
                 "profile.default_content_setting_values.notifications": 2 
         })
+        self.options.add_argument("user-data-dir=C:\\Users\\lalpr\\AppData\\Local\\Google\\Chrome\\User Data")
 
         # Driver - Chrome
-        self.browser = webdriver.Chrome(options=self.options)
+        self.browser = webdriver.Chrome(executable_path=r"chromedriver.exe", options=self.options)
 
 
     def join(self, link, subject):
@@ -319,25 +349,28 @@ class GoogleMeet():
         # waiting untill the element is available in the website
         wait = WebDriverWait(self.browser, 10)
 
-        # google page
-        url = 'https://accounts.google.com/'
-        self.browser.get(url)
+        # ! START - Profile loaded, so no need to login
+        # # google page
+        # url = 'https://accounts.google.com/'
+        # self.browser.get(url)
        
-        # Finding username textbox and logging the username
-        wait.until(EC.element_to_be_clickable((By.ID, 'identifierId'))).send_keys(self.username)
-        wait.until(EC.element_to_be_clickable((By.ID, 'identifierNext'))).click()
+        # # Finding username textbox and logging the username
+        # wait.until(EC.element_to_be_clickable((By.ID, 'identifierId'))).send_keys(self.username)
+        # wait.until(EC.element_to_be_clickable((By.ID, 'identifierNext'))).click()
         
-        # Finding password textbox and logging the password
-        wait.until(EC.element_to_be_clickable((By.NAME, "password"))).send_keys(self.password)
-        wait.until(EC.element_to_be_clickable((By.ID, 'passwordNext'))).click()
-        print("Logged In")
-        time.sleep(3)
+        # # Finding password textbox and logging the password
+        # wait.until(EC.element_to_be_clickable((By.NAME, "password"))).send_keys(self.password)
+        # wait.until(EC.element_to_be_clickable((By.ID, 'passwordNext'))).click()
+        # print("Logged In")
+        # time.sleep(3)
+
+        #! END
 
         # Going to google meet link
         self.browser.get(link)
 
         # Refreshing because google found out our automation works
-        time.sleep(3)
+        time.sleep(2)
         self.browser.refresh()
 
         # Clicking on the dismiss button which comes when camera and mic is off by default in line __inti__ function
@@ -397,13 +430,13 @@ class GoogleMeet():
 
         # Wait till some students enter the class. This is make sure that our leaving time is at 15 students
         # If this not done, instant leaving would happen
-        while (int(onlineNum) < 16):
+        while (int(onlineNum) < 18):
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
             maxPeople = int(onlineNum)
 
         # Loops till the number of people is greater than a value
-        while (int(onlineNum) >= 12):
+        while (int(onlineNum) >= 15):
             time.sleep(5)
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
@@ -438,101 +471,111 @@ class GoogleMeet():
         self.browser.quit()
 
 
-if __name__ == "__main__":
-    
-    
+def main():
 
-    if(TIMETABLE_MODIFICATION_ENABLED):
-        choice = input("Do you want to modify TT for a day (press y/n): ")
-        while(choice.lower() == 'y'):
-            Mday = input("Enter day to be changed: ")
-            Mp1 = input("Enter 1st subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp2 = input("Enter 2nd subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp3 = input("Enter 3rd subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp4 = input("Enter 4th subject (0: No change, NIL: No class, sub_name: Subject): ")
-            Mp5 = input("Enter 5th subject (0: No change, NIL: No class, sub_name: Subject): ")
-
-            modifyTempTimeTable(Mday, Mp1, Mp2, Mp3, Mp4, Mp5)
-            sendWhatsapp("Timetable for "+ Mday+ " modified")
-
-            choice = input("Do you want to modify TT for another day (or remodify) (press y/n): ")
+    # connection to sql database
+    conn = sqlite3.connect('checktt.db', check_same_thread=False)
+    db = conn.cursor()
 
 
     # Wait till 8.30AM and 8.55AM if we start program before the class starts
-    x = datetime.datetime.now()
-    day = x.strftime("%A").lower()
-    time1 = int(x.strftime("%H") + x.strftime("%M"))
+    try:
+        x = datetime.datetime.now()
+        day = x.strftime("%A").lower()
+        time1 = int(x.strftime("%H") + x.strftime("%M"))
 
 
-    if (day == "friday"):
-        if (time1 < 855):  # friday time table is different
-            print("Waiting for class start time...")
-            x = datetime.datetime.now()
-            time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (856-time1)*60, " seconds")
-            time.sleep((856-time1)*60)
-    else:
-        if (time1 < 830):
-            print("Waiting for class start time...")
-            x = datetime.datetime.now()
-            time1 = int(x.strftime("%H") + x.strftime("%M"))
-            print("Sleeping for ", (831 - time1), " minutes")
-            slt = 831 - time1
-            sendTelegram("Sleeping for " +str(slt) + " minutes. Waiting for start of class")
-            sendDiscord("Sleeping for "+str(slt)+" minutes. Waiting for start of class")
-            time.sleep((831-time1)*60)
-
-
-    # Loop to make sure the code runs till timetable ends
-    prev_subject = '.'
-    while(time1 <= 1330):
-        data = getLink()
-        subject = data[0]
-        link = data[1]
-        classTime = int(data[2])
-        nextClassTime = classTime + 100
-
-        sendDiscord("Class: " + subject)
-        sendTelegram("Class: " + subject)
-
-        #FIXME:
-        if day == 'friday':
-            # Not complete
-            nextClassTime = classTime + 95
-            if (time1 % 100) <= 59 and (time1 % 100) >= 30:
-                sleepTime = (nextClassTime - time1 - 40) + 1
-            if (time1 % 100) <= 29 and (time1 % 100) >= 0:
-                sleepTime = (nextClassTime - time1) + 1
+        if (day == "friday"):
+            if (time1 < 855):  # friday time table is different
+                print("Waiting for class start time...")
+                x = datetime.datetime.now()
+                time1 = int(x.strftime("%H") + x.strftime("%M"))
+                print("Sleeping for ", (856-time1)*60, " seconds")
+                time.sleep((856-time1)*60)
         else:
-            nextClassTime = classTime + 100
-            if (time1 % 100) <= 59 and (time1 % 100) >= 30:
-                sleepTime = (nextClassTime - time1 - 40) 
-            if (time1 % 100) <= 29 and (time1 % 100) >= 0:
-                sleepTime = (nextClassTime - time1) 
+            if (time1 < 830):
+                print("Waiting for class start time...")
+                x = datetime.datetime.now()
+                time1 = int(x.strftime("%H") + x.strftime("%M"))
+                print("Sleeping for ", (831 - time1), " minutes")
+                slt = 831 - time1
+                sendTelegram("Sleeping for " +str(slt) + " minutes. Waiting for start of class")
+                sendDiscord("Sleeping for "+str(slt)+" minutes. Waiting for start of class")
+                time.sleep((831-time1)*60)
 
-        if prev_subject != subject:
-            if (subject != 'MEMS' and subject != "NIL"):
-                obj = GoogleMeet(USERNAME, PASSWORD)
-                obj.join(link, subject)
-                obj.leave(link, subject)
-                prev_subject = subject
+
+        # Loop to make sure the code runs till timetable ends
+        prev_subject = '.'
+        while(time1 <= 1325):
+            data = getLink()
+            subject = data[0]
+            link = data[1]
+
+            # For making sure code works properly when same subjects for two consecutive hours
+            nextSubject = data[4]
+            sameSubjectAgain = False
+            if (subject == nextSubject) and subject != 'NIL':
+                sameSubjectAgain = True
+
+            # * To get the time right
+            # classTime = int(data[2])
+            # classTimeMin = classTime%100
+            # classTimeHour = floor(classTime/100)
             
+            # nextClassTime is neesed for the sleeping time 
+            nextClassTime = int(data[3])
+            nextClassTimeMin = nextClassTime%100
+            nextClassTimeHour = floor(nextClassTime/100)
+
+            # timedelta for calculations the difference between the leaving time and the next hour.
+            t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
+            t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
+
+            sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))+1    #! This will be in minutes
+            
+            hourAttended = False
+            if prev_subject != subject:
+                if (subject != 'MEMS' and subject != 'NIL'):
+                    obj = GoogleMeet(USERNAME, PASSWORD)
+                    sendDiscord("Class: " + subject)
+                    sendTelegram("Class: " + subject)
+                    obj.join(link, subject)
+                    obj.leave(link, subject)
+                    hourAttended = True
+                    prev_subject = subject
+                    if sameSubjectAgain and hourAttended:
+                        prev_subject = '.'
+                        # ? Sleep till next hour and attend the next hour
+                        x = datetime.datetime.now()
+                        t1 = datetime.timedelta(hours=int(x.strftime("%H")), minutes=int(x.strftime("%M")))
+                        t2 = datetime.timedelta(hours=nextClassTimeHour, minutes=nextClassTimeMin)
+
+                        sleepTime = int((t2-t1)/datetime.timedelta(minutes=1))
+                        time.sleep(sleepTime * 60)
+                        
+                
+                else:
+                    print("MEMS-NIL")
+                    sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
+                    sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
+                    print("Sleeping for ", sleepTime, " minutes...")
+                    time.sleep(sleepTime * 60)
             else:
-                print("MEMS-NIL")
+                print("Waiting after class...")
+                print("Sleeping for ", sleepTime, " minutes...")
                 sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
                 sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
-                print("Sleeping for ", sleepTime, " minutes...")
-                time.sleep(sleepTime * 60)
-        else:
-            print("Waiting after class...")
-            print("Sleeping for ", sleepTime, " minutes...")
-            sendDiscord("Sleeping for " + str(sleepTime) + " minutes...")
-            sendTelegram("Sleeping for "+str(sleepTime)+" minutes...")
-            time.sleep(sleepTime*60)
+                time.sleep(sleepTime*60)
 
 
-        x = datetime.datetime.now()
-        time1 = int(x.strftime("%H") + x.strftime("%M"))
-        
-    dropTempTimeTable()
-    createTempTimeTable()
+            x = datetime.datetime.now()
+            time1 = int(x.strftime("%H") + x.strftime("%M"))
+
+    except:
+        sendDiscord("Some error occured! Exiting...")
+        sendTelegram("Some error occured! Exiting...")
+
+
+if __name__ == "__main__":
+    main()
+
