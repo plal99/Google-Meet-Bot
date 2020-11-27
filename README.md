@@ -10,7 +10,7 @@ Two codes are needed to run to make this code perfect.
 - `telegramBot.py` : This is actually a telegram bot. It can change your time table, do all kinds of stuff by just using some telegram messages. Mainly we are using it to change timetable in the realtime.
 
 Steps to follow:
-1. Run `telegramBot.py`. Change timetable if needed.
+1. Run `telegramBot.py`. Change timetable if needed (before any current class starts obviously).
 2. Run `GoogleMeet.py`.
 3. Relax !!!
 
@@ -34,9 +34,18 @@ This app has many notification architechtures present
 - **_Telegram_** : I created a bot in telegram and notifications come in the form of messages from that bot
 - **_Notify-run_** : It send you push notifications to browser
 
-## Install
+## What you have to do:
+- You have to create a telegram bot for the start.
+### Install
  - Clone the repository `git clone https://github.com/plal99/Google-Meet-Bot.git`
  - Install requirements.txt `pip install -r requirements.txt`
+
+### Make necessary changes
+- `.env` : Make necessary changes to the env files so as to fit your personal details.
+- Change the `dbStuff.py` so as to fit your requirements. This means changing
+    - Links to all the classes
+    - Class timings
+    - Class subjects (Make sure you name all subjects consistently)
 
 
 # Disclaimer
