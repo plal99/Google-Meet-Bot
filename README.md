@@ -5,6 +5,16 @@ This is a google meet bot I made for attending your classes. This will
 - Notify you when classes are about to end (notifies you each and every step)
 
 ## How it works
+Two codes are needed to run to make this code perfect.
+- `GoogleMeet.py` : This code is made in such a way that, if you run the code before the first class start time, it would wait for the start time and attend all the classes in the temporary timetable.
+- `telegramBot.py` : This is actually a telegram bot. It can change your time table, do all kinds of stuff by just using some telegram messages. Mainly we are using it to change timetable in the realtime.
+
+Steps to follow:
+1. Run `telegramBot.py`. Change timetable if needed.
+2. Run `GoogleMeet.py`.
+3. Relax !!!
+
+## In details
 ### Database
 I used sqlite for making a database. There are mainly 3 sets of tables.
 - **_sub_** : This contains all the subjects and their corresponding permanent links
