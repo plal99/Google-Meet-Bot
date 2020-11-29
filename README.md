@@ -50,14 +50,16 @@ __*I recommend to run it in your PC because, if you need to study (like me :swea
  - Clone the repository `git clone https://github.com/plal99/Google-Meet-Bot.git`
  - Install requirements.txt `pip install -r requirements.txt`
 
-### Make necessary changes
-- `.env` : Make necessary changes to the env files so as to fit your personal details.
-- Change the `dbStuff.py` so as to fit your requirements. This means changing
-    - Links to all the classes
-    - Class timings
+## Make necessary changes
+- `.env` : Make necessary changes to the env files so as to fit your personal details requirements(username, password, tokens, chatid, class links).
+- Change the `dbStuff.py` so as to fit your class requirements requirements. This means changing
+    - Links to all the classes (links should be in the `.env` file)
+    - Class timings (in `createTimeTable()` and `createTempTimeTable()` functions)
     - Class subjects (Make sure you name all subjects consistently)
+- This currently joins a class when there are atleast 5 people and leaves the class when less than 15 people, warns you of class getting over when more than 10 people leave the class. So you are covered from all sides. To make changes in this make changes in `class.py` (in `JOIN_PEOPLE` and `LEAVE_PEOPLE`)
 
 
 # Disclaimer
-Don't use this project to automate your classes. See this project only as a way of understanding automation works and how it can even be implemented in your day to day life. I will never promote anyone to use this for attending online classes.
-Classes are important and respect your teachers. :)
+Don't use this project to automate your classes. See this project only as a way of understanding how automation works and how it can even be implemented in your day to day life. I will never promote anyone to use this for attending online classes nor use it myself.
+
+Classes are important and respect your teachers :slightly_smiling_face:.

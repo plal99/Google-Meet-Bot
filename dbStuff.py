@@ -56,7 +56,8 @@ def dropSubjectTable():
     conn.close()
 
 def createTimeTable():
-    ''' This is the permanent timetable. You make copies of this to the temp timetables'''
+    ''' This is the permanent timetable. You make copies of this to the temp timetables. Done only once. Whatever changes 
+    made to time and subject should be made to createTempTimeTable()'''
 
     conn = sqlite3.connect('checktt.db', check_same_thread=False)
     db = conn.cursor()
@@ -109,7 +110,7 @@ def createTimeTable():
 
 def createTempTimeTable():
     '''This is to create a temp timetable so that in case some teachers modify the timetable just before a class,
-        you can make neccesory modifications'''
+        you can make neccesory modifications. Done whenevr needed.'''
     conn = sqlite3.connect('checktt.db', check_same_thread=False)
     db = conn.cursor()
 
@@ -169,7 +170,7 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
     perm = db.execute("SELECT time, subject FROM '%s'" % (day))
     perm = perm.fetchall()
 
-    # subs here are all times(better time than subs)
+    # subs here are all times(better time than subjects)
     sub1 = perm[0][0]
     sub2 = perm[1][0]
     sub3 = perm[2][0]
@@ -192,8 +193,8 @@ def modifyTempTimeTable(day, p1, p2, p3, p4, p5):
 
     conn.commit()
 
-    perm = db.execute("SELECT * FROM '%s'" % (day+'Temp'))
-    perm = perm.fetchall()
+    # perm = db.execute("SELECT * FROM '%s'" % (day+'Temp'))
+    # perm = perm.fetchall()
 
     # sendDiscord("Timetable for "+day+" changed.")
     # perm = db.execute("SELECT * FROM '%s'" % (dayTemp))

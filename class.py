@@ -1,3 +1,15 @@
+
+#! Change below only
+
+JOIN_PEOPLE = 5
+LEAVE_PEOPLE = 15
+
+#! Change above only
+
+LEAVE_PEOPLE_SEC = LEAVE_PEOPLE + 3
+
+
+
 import re
 import os
 from dotenv import load_dotenv
@@ -117,7 +129,7 @@ class GoogleMeet():
         peopleNum = re.findall('\s+[0-9]+\s+', inMeet[0].text)[0].rstrip().lstrip()
 
         # Loops till number of people inside the meeting (before we enter the meeting) is less than a value
-        while (int(peopleNum) < 5):
+        while (int(peopleNum) < JOIN_PEOPLE):
             time.sleep(2)
             inMeet = self.browser.find_elements_by_xpath('//div[@class = "Yi3Cfd"]')
             peopleNum = re.findall('\s[0-9]+\s', inMeet[0].text)[0].rstrip().lstrip()
@@ -144,13 +156,13 @@ class GoogleMeet():
 
         # Wait till some students enter the class. This is make sure that our leaving time is at 15 students
         # If this not done, instant leaving would happen
-        while (int(onlineNum) < 18):
+        while (int(onlineNum) < LEAVE_PEOPLE_SEC):
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
             maxPeople = int(onlineNum)
 
         # Loops till the number of people is greater than a value
-        while (int(onlineNum) >= 15):
+        while (int(onlineNum) >= LEAVE_PEOPLE):
             time.sleep(5)
             online = self.browser.find_elements_by_xpath('//span[@class = "wnPUne N0PJ8e"]')
             onlineNum = re.findall('[0-9]+', online[0].text)[0].rstrip().lstrip()
