@@ -1,5 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, run_async
-from bot import *
+from GoogleMeet import *
 # @run_async
 # def restart(update, context):
 #     restart_message = context.bot.send_message(chat_id=update.message.chat_id, text="Restarting, Please wait!")

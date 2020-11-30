@@ -1,4 +1,4 @@
-from bot import *
+from GoogleMeet import *
 
 dropTempTimeTable()
 createTempTimeTable()

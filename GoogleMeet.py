@@ -9,7 +9,7 @@ from math import floor
 
 from dbStuff import *
 from notify import *
-from class import *
+from classes import *
 
 
 def main():
