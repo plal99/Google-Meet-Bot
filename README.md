@@ -27,11 +27,23 @@ I used selenium library for automating the joining and leaving part. It logs in 
 ### Leaving
 It takes into account how much people are in the meeting per 5 seconds, and the maximum number of people present in the class. It will leave the class when number of people inside it goes below a threshold. It even notifies you when classes are about to end automatically
 
+## Telegram bot 
+By asking /help in the bot you can see all the functionalities it can implement.
+
+```
+/start  :  Start automatic session
+/tt day s1 s2 s3 s4 s5 s6  :  Change timetable for anyday
+/dtt  :  Drop temp tables
+/ctt  :  Create temp tables
+/timetable  :  View current day timetable
+
+```
+
 ### Notification 
 This app has many notification architectures present
 - **_Whatsapp_** (twilio sandbox) : It will notify everything by whatsapp. You need to have account in twilio and register. It costs about 0.0085$ for 1 message and you'll get 15$ when signing up. If you are a college student then you will have a college mail and then you can register github pro for free and get 50$ in twilio.
 - **_Discord_** : I created a channel for me and took the discord webhook. It is free and i'll get all notifications in it
-- **_Telegram_** : I created a bot in telegram and notifications come in the form of messages from that bot
+- **_Telegram_** : I created a bot in telegram and notifications come in the form of messages from that bot. You can also make changes to timetable using this telegram API.
 - **_Notify-run_** : It send you push notifications to browser
 
 ## What you have to do:
@@ -41,8 +53,9 @@ This app has many notification architectures present
 - For whatsapp custom notifications visit [Twilio](https://www.twilio.com/docs/whatsapp/api). I am not much interested in this because, whatsapp do not have any api features till now and they are current provided by twilio sandbox for experimentation. So they have some issues and I am more than content with telegram. (Please check it out if you are interested in learning stuff)
 - Create / Make changes to a `.env` file (I haven't created it in this repository obviously due to privacy reasons.)
 - Change class timings, subject names, and links to suit your classes.
+- Make change to match the your chrome profile of college mail id, so as to remove the need to login using the selenium (I have commented the solution in `join()` of `classes.py`) (You have to make changes in `__init__` of `classes.py` in the __user-data-dir__). I came up with this because, google now has a way to know whether a bot is loggin in or not. So it blocks before you log in. SO if the profile is loaded, google cannot know whether it is a bot or not.
 - Run `telegramBot.py` prior to the other code. This is not necessary but is essential if first hour is changed.
-- Run `GoogleMeet.py` some time before your class time (Whenever you want :wink: )
+- Run `GoogleMeet.py` some time before your class time (Whenever you want :wink:)
 
 
 __*I recommend to run it in your PC because, if you need to study (like me :sweat_smile:) you can view it. Deploying to Heroku will take some time. Heroku has some issues. I am using sqlite3 for database purposes. The problem is that Heroku supports sqlite3, but the database will get overwritten with garbage values every 24 hours or so. Heroku's native database support is postgreSQL. So after perfecting my code, I will migrate from sqlite3 to postgreSQL and then it will be heaven my friends.*__
@@ -56,7 +69,7 @@ __*I recommend to run it in your PC because, if you need to study (like me :swea
     - Links to all the classes (links should be in the `.env` file)
     - Class timings (in `createTimeTable()` and `createTempTimeTable()` functions)
     - Class subjects (Make sure you name all subjects consistently)
-- This currently joins a class when there are atleast 5 people and leaves the class when less than 15 people, warns you of class getting over when more than 10 people leave the class. So you are covered from all sides. To make changes in this make changes in `class.py` (in `JOIN_PEOPLE` and `LEAVE_PEOPLE`)
+- This currently joins a class when there are atleast 5 people and leaves the class when less than 15 people, warns you of class getting over when more than 10 people leave the class. So you are covered from all sides. So make changes in `class.py` (`JOIN_PEOPLE` and `LEAVE_PEOPLE`)
 
 
 # Disclaimer

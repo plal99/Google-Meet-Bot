@@ -267,3 +267,23 @@ def getLink():
     conn.close()
 
     return [subj, link, classTime, nextClassTime, nextSubj]
+
+def printTimetable():
+    conn = sqlite3.connect('checktt.db', check_same_thread=False)
+    db = conn.cursor()
+
+    x = datetime.datetime.now()
+    day = x.strftime("%A").lower()
+
+    day = day + 'Temp'
+    db.execute("SELECT * FROM '%s' "%(day))
+    data = db.fetchall()
+    sub1 = data[0][2]
+    sub2 = data[1][2]
+    sub3 = data[2][2]
+    sub4 = data[3][2]
+    sub5 = data[4][2]
+
+    conn.close()
+
+    return [sub1, sub2, sub3, sub4, sub5]

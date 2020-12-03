@@ -22,6 +22,7 @@ def help(update, context):
     update.message.reply_text('/tt day s1 s2 s3 s4 s5 s6  :  Change timetable for anyday')
     update.message.reply_text('/dtt  :  Drop temp tables')
     update.message.reply_text('/ctt  :  Create temp tables')
+    update.message.reply_text('/timetable  :  View current day timetable')
     # update.message.reply_text('/startdb  :  Start connection with database')
     # update.message.reply_text('/stopdb  :  Drop connection with database')
 
@@ -43,6 +44,13 @@ def ttChange(update, context):
     
     modifyTempTimeTable(day, s1, s2, s3, s4, s5)
     update.message.reply_text('Time table modified')
+    subjects = printTimetable()
+    print(subjects)
+
+    day = datetime.datetime.now().strftime("%A")
+
+    text = ""+ subjects[0]+ " - "+ subjects[1]+ " - "+ subjects[2] + " - " + subjects[3] + " - " + subjects[4]
+    update.message.reply_text(day + "  :  "+ text)
     sendDiscord("Time table modified")
     conn.close()
 
@@ -60,6 +68,18 @@ def ctt(update, context):
     conn.close()
     update.message.reply_text('Created all temp tables')
 
+def timetable(update, context):
+    conn = conn = sqlite3.connect('checktt.db', check_same_thread=False)
+    db = conn.cursor()
+    subjects = printTimetable()
+    print(subjects)
+
+    day = datetime.datetime.now().strftime("%A")
+
+    text = ""+ subjects[0]+ " - "+ subjects[1]+ " - "+ subjects[2] + " - " + subjects[3] + " - " + subjects[4]
+    update.message.reply_text(day + "  :  "+ text)
+    conn.close()
+
 
 updater = Updater(TELEGRAM_TOKEN, use_context=True)
 
@@ -71,6 +91,8 @@ dp.add_handler(CommandHandler("tt", ttChange))
 dp.add_handler(CommandHandler("help", help))
 dp.add_handler(CommandHandler("dtt", dtt))
 dp.add_handler(CommandHandler("ctt", ctt))
+dp.add_handler(CommandHandler("timetable", timetable))
+
 # dp.add_handler(CommandHandler("startdb", startdb))
 # dp.add_handler(CommandHandler("stopdb", stopdb))
 
