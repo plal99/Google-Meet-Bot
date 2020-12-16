@@ -142,6 +142,7 @@ class GoogleMeet():
         # messaging part
         message = "Joined "+ self.subject +" class"
         sendDiscord(message)
+        sendTelegram(message)
         sendWhatsapp(message)
         time.sleep(5)
 
@@ -187,7 +188,7 @@ class GoogleMeet():
         self.browser.execute_script("arguments[0].click();", button)
 
         # messaging part
-        message = "Leaving "+ subject +"class"
+        message = "Leaving "+ subject +" class"
         sendDiscord(message)
         sendWhatsapp(message)
         sendTelegram(message)

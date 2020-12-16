@@ -4,6 +4,8 @@ This is a Google Meet bot I made for attending your classes. This will
 - Leave the class when it reaches a threshold amount of people
 - Notify you when classes are about to end (notifies you each and every step)
 
+You can change the timetable real-time using telegram from your phone. Almost everything can be controlled from telegram.
+
 ## How it works
 Two codes are needed to run to make this code perfect.
 - `GoogleMeet.py` : This code is made in such a way that, if you run the code before the first class start time, it would wait for the start time and attend all the classes in the temporary timetable.

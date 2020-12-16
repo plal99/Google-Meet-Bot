@@ -77,6 +77,8 @@ def main():
                     sendTelegram("Class: " + subject)
                     obj.join(link, subject)
                     obj.leave(link, subject)
+                    sendDiscord("Next class: " + nextSubject)
+                    sendTelegram("Next class: " + nextSubject)
                     hourAttended = True
                     prev_subject = subject
                     if sameSubjectAgain and hourAttended:
